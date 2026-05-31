@@ -4,5 +4,3 @@
 
 vim.keymap.set({ "n", "x" }, "<leader>p", '"+p', { desc = "Paste System Clipboard" })
 vim.keymap.set("x", "<leader>y", '"+y', { desc = "Yank Selection to System Clipboard" })
-vim.keymap.set("c", "<Down>", "<C-n>", { desc = "Next Command-line Completion" })
-vim.keymap.set("c", "<Up>", "<C-p>", { desc = "Previous Command-line Completion" })

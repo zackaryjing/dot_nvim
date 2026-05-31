@@ -13,5 +13,6 @@ nvim
 
 首次启动时，LazyVim 会自动安装插件。
 
+新机器的环境准备见 [Neovim 前置环境](docs/prerequisites.md)。
 使用说明见 [个人速查表](docs/cheatsheet.md)。更多配置方式参考
 [LazyVim 官方文档](https://lazyvim.github.io/)。

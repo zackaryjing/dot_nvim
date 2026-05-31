@@ -1,3 +1,8 @@
 -- Keymaps are automatically loaded on the VeryLazy event
 -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
 -- Add any additional keymaps here
+
+vim.keymap.set({ "n", "x" }, "<leader>p", '"+p', { desc = "Paste System Clipboard" })
+vim.keymap.set("x", "<leader>y", '"+y', { desc = "Yank Selection to System Clipboard" })
+vim.keymap.set("c", "<Down>", "<C-n>", { desc = "Next Command-line Completion" })
+vim.keymap.set("c", "<Up>", "<C-p>", { desc = "Previous Command-line Completion" })

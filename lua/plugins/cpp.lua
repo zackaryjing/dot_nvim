@@ -1,9 +1,10 @@
 local cpp_terminal
 
-local function run_cpp_file(position)
+local function cpp_run_context()
   local source = vim.api.nvim_buf_get_name(0)
   if vim.bo.filetype ~= "cpp" or source == "" then
-    return Snacks.notify.warn("Current buffer is not a saved C++ file")
+    Snacks.notify.warn("Current buffer is not a saved C++ file")
+    return
   end
 
   vim.cmd.write()
@@ -26,18 +27,48 @@ local function run_cpp_file(position)
     "  exit_code=$?",
     "  printf '\\n[build failed with code %s]\\n' \"$exit_code\"",
     "fi",
-    "exec " .. escape(vim.o.shell),
   }, "\n")
+
+  return root, command
+end
+
+local function run_cpp_external()
+  local root, command = cpp_run_context()
+  if not root then
+    return
+  end
+
+  local wait_for_escape = table.concat({
+    "printf '\\n[press Esc to close]\\n'",
+    "while IFS= read -r -s -n 1 key; do",
+    "  [ \"$key\" = $'\\e' ] && break",
+    "done",
+  }, "\n")
+
+  vim.system({
+    "gnome-terminal",
+    "--title=C++ Run",
+    "--working-directory=" .. root,
+    "--",
+    "bash",
+    "-lc",
+    command .. "\n" .. wait_for_escape,
+  }, { detach = true })
+end
+
+local function run_cpp_bottom()
+  local root, command = cpp_run_context()
+  if not root then
+    return
+  end
 
   if cpp_terminal and cpp_terminal:buf_valid() then
     cpp_terminal:close()
   end
-  local win = position == "bottom" and {
+  local win = {
     position = "bottom",
     height = 0.35,
     wo = { winbar = " C++ Run " },
-  } or {
-    position = "float",
   }
 
   cpp_terminal = Snacks.terminal.open({ vim.o.shell, "-lc", command }, {
@@ -51,8 +82,8 @@ return {
   {
     "folke/snacks.nvim",
     keys = {
-      { "<leader>rr", function() run_cpp_file("float") end, desc = "Compile and Run C++ File (Float)" },
-      { "<leader>rc", function() run_cpp_file("bottom") end, desc = "Compile and Run C++ File (Bottom)" },
+      { "<leader>rr", run_cpp_external, desc = "Compile and Run C++ File (External Terminal)" },
+      { "<leader>rc", run_cpp_bottom, desc = "Compile and Run C++ File (Bottom)" },
     },
   },
   {

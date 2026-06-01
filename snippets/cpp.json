@@ -25,16 +25,6 @@
       "// "
     ]
   },
-  "Write variable": {
-    "prefix": "wvar",
-    "description": "Print the selected C++ variable with its name",
-    "body": "cout << \"${TM_SELECTED_TEXT}: \" << ${TM_SELECTED_TEXT} << endl;$0"
-  },
-  "Write line": {
-    "prefix": "wline",
-    "description": "Print the selected C++ expression",
-    "body": "cout << ${TM_SELECTED_TEXT} << endl;$0"
-  },
   "Temporary vector": {
     "prefix": "tv",
     "description": "Create a temporary vector helper",

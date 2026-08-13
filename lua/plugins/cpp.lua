@@ -1,4 +1,6 @@
 local cpp_terminal
+local run_cpp_bottom
+local Platform = require("config.platform")
 
 local function cpp_run_context()
   local source = vim.api.nvim_buf_get_name(0)
@@ -13,7 +15,21 @@ local function cpp_run_context()
   local output_dir = root .. "/output"
   local executable = output_dir .. "/" .. vim.fn.fnamemodify(source, ":t:r")
   local escape = vim.fn.shellescape
-  local compile_command = "clang++ -std=c++26 -fsanitize=address -g " .. escape(source) .. " -o " .. escape(executable)
+  local toolchain = Platform.cpp_toolchain()
+  if not toolchain then
+    Snacks.notify.error("No compatible C++ compiler was found")
+    return
+  end
+
+  local compile_command = table.concat({
+    escape(toolchain.compiler),
+    "-std=" .. toolchain.standard,
+    "-fsanitize=address",
+    "-g",
+    escape(source),
+    "-o",
+    escape(executable),
+  }, " ")
   local command = table.concat({
     "mkdir -p " .. escape(output_dir),
     "printf '\\n[build] %s\\n' " .. escape(compile_command),
@@ -45,18 +61,13 @@ local function run_cpp_external()
     "done",
   }, "\n")
 
-  vim.system({
-    "gnome-terminal",
-    "--title=C++ Run",
-    "--working-directory=" .. root,
-    "--",
-    "bash",
-    "-lc",
-    command .. "\n" .. wait_for_escape,
-  }, { detach = true })
+  if not Platform.open_external_terminal(root, command .. "\n" .. wait_for_escape) then
+    Snacks.notify.info("No supported external terminal found; using the Neovim terminal")
+    run_cpp_bottom()
+  end
 end
 
-local function run_cpp_bottom()
+run_cpp_bottom = function()
   local root, command = cpp_run_context()
   if not root then
     return
@@ -88,22 +99,22 @@ return {
   },
   {
     "neovim/nvim-lspconfig",
-    opts = {
-      servers = {
-        clangd = {
-          mason = false,
-          cmd = {
-            "clangd-20",
-            "--background-index",
-            "--clang-tidy",
-            "--header-insertion=iwyu",
-            "--completion-style=detailed",
-            "--function-arg-placeholders",
-            "--fallback-style=llvm",
-          },
+    opts = function(_, opts)
+      local clangd = Platform.clangd()
+      opts.servers = opts.servers or {}
+      opts.servers.clangd = vim.tbl_deep_extend("force", opts.servers.clangd or {}, {
+        mason = false,
+        cmd = {
+          clangd or "clangd",
+          "--background-index",
+          "--clang-tidy",
+          "--header-insertion=iwyu",
+          "--completion-style=detailed",
+          "--function-arg-placeholders",
+          "--fallback-style=llvm",
         },
-      },
-    },
+      })
+    end,
   },
   {
     "stevearc/conform.nvim",

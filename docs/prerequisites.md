@@ -1,47 +1,68 @@
 # Neovim 前置环境
 
-以下命令适用于 Ubuntu 桌面环境。可以按顺序复制执行。
+配置会把 `~/.local/bin` 加到 Neovim 的 `PATH`，并自动选择当前系统上可用的
+`clangd`、C++ 编译器和其支持的最高语言标准。无需固定安装 LLVM 20。
+
+## Debian / Ubuntu / WSL
 
 ```bash
-# 安装 LazyVim 常用前置、Wayland 剪贴板、Snacks SQLite 支持和 C++ 工具链。
-# C++ LSP 固定使用 clangd-20，与 clang++ 20 保持一致。
 sudo apt update
-sudo apt install -y git curl build-essential ripgrep fd-find fzf jq wl-clipboard libsqlite3-dev clang-20 clangd-20 clang-tidy clang-format
+sudo apt install -y git curl build-essential ripgrep fd-find fzf jq \
+  libsqlite3-dev clang clangd clang-tidy clang-format xclip trash-cli
 
-# 确保用户级命令目录存在，并加入 PATH。
+# Debian/Ubuntu 将 fd 命名为 fdfind。
 mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
+ln -sf /usr/bin/fdfind "$HOME/.local/bin/fd"
+```
 
-# 安装官方最新版 Neovim。Ubuntu 仓库中的版本通常较旧。
-NVIM_ARCH=$(uname -m | sed -e 's/aarch64/arm64/')
-curl -fsSLo /tmp/nvim.tar.gz "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${NVIM_ARCH}.tar.gz"
-mkdir -p "$HOME/.local/opt"
+Wayland 桌面可将 `xclip` 换为 `wl-clipboard`。WSL 中存在 Windows Interop 时，
+配置会使用 Windows Terminal 和 `explorer.exe`；没有 Interop 或外部终端时，
+C++ 运行命令会自动退回 Neovim 底部终端。
+
+## Neovim 与 lazygit
+
+发行版仓库版本过旧或没有 `lazygit` 时，可将官方 release 安装到用户目录：
+
+```bash
+mkdir -p "$HOME/.local/bin" "$HOME/.local/opt"
+
+ARCH=$(uname -m | sed 's/aarch64/arm64/')
+curl -fsSLo /tmp/nvim.tar.gz \
+  "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${ARCH}.tar.gz"
 tar xf /tmp/nvim.tar.gz -C "$HOME/.local/opt"
-ln -sf "$HOME/.local/opt/nvim-linux-${NVIM_ARCH}/bin/nvim" "$HOME/.local/bin/nvim"
+ln -sf "$HOME/.local/opt/nvim-linux-${ARCH}/bin/nvim" "$HOME/.local/bin/nvim"
 
-# 安装 lazygit。Ubuntu 24.04 仓库中没有 lazygit，使用官方 release。
-LAZYGIT_VERSION=$(curl -fsSL "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": *"v\K[^"]*')
-LAZYGIT_ARCH=$(uname -m | sed -e 's/aarch64/arm64/')
-curl -fsSLo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_${LAZYGIT_ARCH}.tar.gz"
+LAZYGIT_TAG=$(curl -fsSL https://api.github.com/repos/jesseduffield/lazygit/releases/latest | jq -r .tag_name)
+curl -fsSLo /tmp/lazygit.tar.gz \
+  "https://github.com/jesseduffield/lazygit/releases/download/${LAZYGIT_TAG}/lazygit_${LAZYGIT_TAG#v}_Linux_${ARCH}.tar.gz"
 tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
 install -m 755 /tmp/lazygit "$HOME/.local/bin/lazygit"
+```
 
-# 克隆配置。首次启动后等待 LazyVim 安装插件和 Mason 工具。
-git clone git@github.com:zackaryjing/dot_nvim.git "$HOME/.config/nvim"
-nvim
+## tree-sitter 与旧版 glibc
 
-# 暴露 Mason 安装的 tree-sitter CLI。
-# 当前 nvim-treesitter 要求 tree-sitter-cli >= 0.26.1，不要安装 Ubuntu 24.04 中过旧的 apt 版本。
-ln -sf "$HOME/.local/share/nvim/mason/bin/tree-sitter" "$HOME/.local/bin/tree-sitter"
+Mason 或上游 release 的预编译 `tree-sitter` 可能要求比 Debian Stable 更新的
+glibc。遇到 `GLIBC_x.xx not found` 时，从 Rust 源码编译，产物直接进入
+`~/.local/bin`：
 
-# 检查结果。
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+  sh -s -- -y --profile minimal
+. "$HOME/.cargo/env"
+cargo install tree-sitter-cli --locked --root "$HOME/.local"
+```
+
+配置将 Mason 的目录放在 `PATH` 末尾，因此系统或 `~/.local/bin` 中兼容的版本
+优先于 Mason 下载的二进制文件。
+
+## 检查
+
+```bash
+command -v nvim rg fd fzf jq lazygit tree-sitter clang++ clangd
 nvim --version
 tree-sitter --version
 lazygit --version
-nvim
 ```
 
-进入 Neovim 后运行 `:checkhealth` 查看剩余提示。
-
-`~/.local/bin` 应永久加入 shell 的 `PATH`。Ubuntu 默认会在重新登录后通过
-`~/.profile` 加载该目录；如果当前终端中命令尚未生效，重新打开终端即可。
+进入 Neovim 后运行 `:checkhealth` 查看剩余提示。`~/.local/bin` 也应永久加入
+shell 的 `PATH`；如果当前终端尚未生效，重新打开终端即可。

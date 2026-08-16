@@ -5,6 +5,10 @@ return {
       terminal = {
         win = {
           height = 10,
+          keys = {
+            hide_slash = false,
+            hide_underscore = false,
+          },
         },
       },
       picker = {

@@ -4,6 +4,32 @@ return {
     opts = function(_, opts)
       local cmp = require("cmp")
 
+      opts.experimental = opts.experimental or {}
+      opts.experimental.ghost_text = false
+
+      for _, source in ipairs(opts.sources or {}) do
+        if source.name == "snippets" then
+          local previous_filter = source.entry_filter
+          source.entry_filter = function(entry, context)
+            if previous_filter and not previous_filter(entry, context) then
+              return false
+            end
+
+            local before_cursor = context and context.cursor_before_line
+            if not before_cursor then
+              local cursor_col = vim.api.nvim_win_get_cursor(0)[2]
+              before_cursor = vim.api.nvim_get_current_line():sub(1, cursor_col)
+            end
+            local is_member_access = before_cursor:match("%.[%w_]*$")
+              or before_cursor:match("%-%>[%w_]*$")
+              or before_cursor:match("::[%w_]*$")
+              or (vim.bo.filetype == "lua" and before_cursor:match(":[%w_]*$"))
+
+            return not is_member_access
+          end
+        end
+      end
+
       opts.mapping["<Tab>"] = cmp.mapping(function(fallback)
         if cmp.visible() then
           cmp.confirm({ select = true })

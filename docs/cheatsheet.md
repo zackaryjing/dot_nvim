@@ -64,6 +64,7 @@ Snacks Explorer 的宽度固定为 30 列。
 | `s` | 删除当前字符并进入 Insert 模式，保留 Vim 原生行为 |
 | `<C-Space>` / `<BS>` | 按 Treesitter 结构扩大 / 缩小选择范围 |
 | `f/F/t/T{字符}` | 查找字符；每次开始新查找，使用 `;` / `,` 重复上次查找 |
+| Insert 模式下按 `<M-a>`（`Alt-a`） | 移动到当前行末尾并保持 Insert 模式，便于补上右括号等行尾内容 |
 
 ## Surround
 

@@ -4,6 +4,9 @@
 
 vim.keymap.set({ "n", "x" }, "<leader>p", '"+p', { desc = "Paste System Clipboard" })
 vim.keymap.set("x", "<leader>y", '"+y', { desc = "Yank Selection to System Clipboard" })
+for _, lhs in ipairs({ "va", "Va" }) do
+  vim.keymap.set("n", lhs, "ggVG", { desc = "Select Entire Buffer" })
+end
 vim.keymap.set("i", "<Esc>", function()
   vim.cmd("noh")
   LazyVim.cmp.actions.snippet_stop()

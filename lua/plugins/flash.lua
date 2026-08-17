@@ -1,6 +1,18 @@
 return {
   {
     "folke/flash.nvim",
+    opts = {
+      modes = {
+        char = {
+          char_actions = function()
+            return {
+              [";"] = "next",
+              [","] = "prev",
+            }
+          end,
+        },
+      },
+    },
     keys = {
       { "s", false, mode = { "n", "x", "o" } },
       { "S", false, mode = { "n", "x", "o" } },

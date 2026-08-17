@@ -5,3 +5,4 @@
 require("config.platform").setup_path()
 
 vim.opt.virtualedit = "onemore"
+vim.opt.listchars = { tab = "> ", nbsp = "+" }

@@ -7,6 +7,12 @@ return {
       opts.experimental = opts.experimental or {}
       opts.experimental.ghost_text = false
 
+      opts.window = opts.window or {}
+      opts.window.completion = opts.window.completion or {}
+      opts.window.completion.winblend = 0
+      opts.window.documentation = opts.window.documentation or {}
+      opts.window.documentation.winblend = 0
+
       for _, source in ipairs(opts.sources or {}) do
         if source.name == "snippets" then
           local previous_filter = source.entry_filter

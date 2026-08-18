@@ -4,6 +4,29 @@
 
 vim.keymap.set({ "n", "x" }, "<leader>p", '"+p', { desc = "Paste System Clipboard" })
 vim.keymap.set("x", "<leader>y", '"+y', { desc = "Yank Selection to System Clipboard" })
+
+local function move_visual_lines(direction)
+  local first = math.min(vim.fn.line("v"), vim.fn.line("."))
+  local last = math.max(vim.fn.line("v"), vim.fn.line("."))
+  local count = vim.v.count1
+  local destination = direction > 0 and math.min(last + count, vim.api.nvim_buf_line_count(0))
+    or math.max(first - count - 1, 0)
+
+  if destination == last or destination == first - 1 then
+    return
+  end
+
+  vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "nx", false)
+  vim.cmd.move({ range = { first, last }, args = { tostring(destination) }, mods = { silent = true } })
+  vim.cmd("normal! gv")
+end
+
+vim.keymap.set("x", "J", function()
+  move_visual_lines(1)
+end, { desc = "Move Selection Down" })
+vim.keymap.set("x", "K", function()
+  move_visual_lines(-1)
+end, { desc = "Move Selection Up" })
 vim.keymap.set("i", "<M-a>", "<End>", { desc = "Move to End of Line" })
 vim.keymap.set("i", "<Esc>", function()
   vim.cmd("noh")

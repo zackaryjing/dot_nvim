@@ -36,11 +36,17 @@ end, { expr = true, desc = "Escape and Preserve Blank-Line Indent" })
 vim.keymap.set("n", "o", "o <BS>", { desc = "Add Line Below and Preserve Indent" })
 vim.keymap.set("n", "O", "O <BS>", { desc = "Add Line Above and Preserve Indent" })
 
-local function focus_root_terminal()
-  Snacks.terminal.focus(nil, { cwd = LazyVim.root() })
+local function toggle_root_terminal()
+  -- Don't respond inside a terminal buffer: no "t" mode mapping exists, so
+  -- <space>t in terminal insert mode passes through to the program; in
+  -- terminal normal mode the guard below ignores the keystroke too.
+  if vim.bo.buftype == "terminal" then
+    return
+  end
+  Snacks.terminal.toggle(nil, { cwd = LazyVim.root() })
 end
 
-vim.keymap.set({ "n", "t" }, "<leader>t", focus_root_terminal, { desc = "Terminal (Root Dir)" })
+vim.keymap.set("n", "<leader>t", toggle_root_terminal, { desc = "Toggle Terminal (Root Dir)" })
 vim.keymap.set("n", "<C-/>", "gcc", { remap = true, desc = "Toggle Comment Line" })
 vim.keymap.set("x", "<C-/>", "gc", { remap = true, desc = "Toggle Comment Selection" })
 vim.keymap.set("n", "<C-_>", "gcc", { remap = true, desc = "Toggle Comment Line" })

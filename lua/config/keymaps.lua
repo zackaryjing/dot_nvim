@@ -2,6 +2,7 @@
 -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
 -- Add any additional keymaps here
 
+vim.keymap.set("n", "<leader>e", "<leader>fE", { remap = true, desc = "Explorer (cwd)" })
 vim.keymap.set({ "n", "x" }, "<leader>p", '"+p', { desc = "Paste System Clipboard" })
 vim.keymap.set("x", "<leader>y", '"+y', { desc = "Yank Selection to System Clipboard" })
 
@@ -28,6 +29,7 @@ vim.keymap.set("x", "K", function()
   move_visual_lines(-1)
 end, { desc = "Move Selection Up" })
 vim.keymap.set("i", "<M-a>", "<End>", { desc = "Move to End of Line" })
+vim.keymap.set("i", "<M-b>", "<Home>", { desc = "Move to Start of Line" })
 vim.keymap.set("i", "<Esc>", function()
   vim.cmd("noh")
   LazyVim.cmp.actions.snippet_stop()

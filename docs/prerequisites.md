@@ -3,6 +3,36 @@
 配置会把 `~/.local/bin` 加到 Neovim 的 `PATH`，并自动选择当前系统上可用的
 `clangd`、C++ 编译器和其支持的最高语言标准。无需固定安装 LLVM 20。
 
+## Windows
+
+原生 Windows 上 C++ 编译运行依赖 PowerShell 和可选的 Windows Terminal：
+
+```powershell
+# 推荐用 winget 或 scoop 安装
+winget install --id LLVM.LLVM
+winget install --id Microsoft.PowerShell
+# 可选：外部终端 <leader>rr
+winget install --id Microsoft.WindowsTerminal
+
+# scoop 用户
+scoop install llvm pwsh
+```
+
+其它常用工具：
+
+```powershell
+winget install --id BurntSushi.ripgrep.MSVC
+winget install --id sharkdp.fd
+winget install --id junegunn.fzf
+winget install --id jesseduffield.lazygit
+scoop install jq  # 或 winget install jqlang.jq
+```
+
+- `<leader>rc`：用 PowerShell 在 Neovim 底部终端编译并运行
+- `<leader>rr`：用 Windows Terminal 新标签页运行；找不到 `wt.exe` 时自动退回底部终端
+- 编译器会在 PATH 里按 clang++ 版本号和 g++ 依次探测；产物写入项目 `output\`
+- 必须安装 PowerShell（`powershell.exe` 或 `pwsh`）；仅有 cmd.exe 时运行命令不可用
+
 ## Debian / Ubuntu / WSL
 
 ```bash
@@ -62,6 +92,13 @@ command -v nvim rg fd fzf jq lazygit tree-sitter clang++ clangd
 nvim --version
 tree-sitter --version
 lazygit --version
+```
+
+Windows PowerShell 下：
+
+```powershell
+Get-Command nvim, rg, fd, fzf, jq, lazygit, clang++, clangd, pwsh, wt -ErrorAction SilentlyContinue
+nvim --version
 ```
 
 进入 Neovim 后运行 `:checkhealth` 查看剩余提示。`~/.local/bin` 也应永久加入

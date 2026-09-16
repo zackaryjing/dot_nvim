@@ -100,7 +100,7 @@ function M.clangd()
   })
 end
 
-local function windows_terminal()
+local function wsl_windows_terminal()
   if not M.has_wsl_interop then
     return
   end
@@ -109,10 +109,45 @@ local function windows_terminal()
   return matches[1]
 end
 
+function M.powershell()
+  return M.executable({ "pwsh.exe", "pwsh", "powershell.exe", "powershell" })
+end
+
+function M.is_powershell(shell)
+  if not shell then
+    return false
+  end
+  local name = vim.fn.fnamemodify(shell, ":t"):lower()
+  return name:find("pwsh", 1, true) ~= nil or name:find("powershell", 1, true) ~= nil
+end
+
 ---@param root string
 ---@param command string
 ---@return boolean
 function M.open_external_terminal(root, command)
+  if M.is_windows then
+    local wt = M.executable({ "wt.exe", "wt" })
+    local ps = M.powershell()
+    if not (wt and ps) then
+      return false
+    end
+
+    vim.system({
+      wt,
+      "new-tab",
+      "--title",
+      "C++ Run",
+      "--startingDirectory",
+      root:gsub("/", "\\"),
+      ps,
+      "-NoLogo",
+      "-NoExit",
+      "-Command",
+      command,
+    }, { detach = true })
+    return true
+  end
+
   local shell = M.executable({ "bash", "zsh", "sh" }) or vim.o.shell
   local terminal = M.executable({ "gnome-terminal" })
   if terminal then
@@ -146,7 +181,7 @@ function M.open_external_terminal(root, command)
     return true
   end
 
-  local wt = windows_terminal()
+  local wt = wsl_windows_terminal()
   local wsl = "/mnt/c/Windows/System32/wsl.exe"
   if wt and uv.fs_stat(wsl) then
     vim.system({

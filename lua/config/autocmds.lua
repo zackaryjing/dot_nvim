@@ -14,9 +14,17 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+local function apply_default_cpp_indent()
+  vim.opt_local.shiftwidth = 4
+  vim.opt_local.softtabstop = 4
+  vim.opt_local.tabstop = 4
+  vim.opt_local.expandtab = true
+end
+
 local function apply_clang_format_indent()
   local source = vim.api.nvim_buf_get_name(0)
   if source == "" or vim.fn.executable("clang-format") ~= 1 then
+    apply_default_cpp_indent()
     return
   end
 
@@ -25,6 +33,7 @@ local function apply_clang_format_indent()
     upward = true,
   })[1]
   if not config then
+    apply_default_cpp_indent()
     return
   end
 
@@ -55,7 +64,7 @@ local function apply_clang_format_indent()
 end
 
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "c", "cpp" },
+  pattern = { "c", "cpp", "h", "hpp" },
   callback = apply_clang_format_indent,
 })
 

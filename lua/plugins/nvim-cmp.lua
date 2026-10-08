@@ -36,6 +36,17 @@ return {
         end
       end
 
+      -- Don't highlight any completion item by default. With the default
+      -- (completeopt without "noselect") cmp marks the first entry as selected,
+      -- so <CR> would silently accept it -- e.g. typing "0.1" right after
+      -- "0.6128" replaces it with "0.6128" instead of inserting a newline.
+      opts.completion = opts.completion or {}
+      opts.completion.completeopt = "menu,menuone,noinsert,noselect"
+      opts.preselect = cmp.PreselectMode.None
+      -- <CR> confirms only an explicitly selected item, otherwise falls back to
+      -- a newline. <Tab> below still accepts the top item in one keystroke.
+      opts.mapping["<CR>"] = LazyVim.cmp.confirm({ select = false })
+
       opts.mapping["<Tab>"] = cmp.mapping(function(fallback)
         if cmp.visible() then
           cmp.confirm({ select = true })

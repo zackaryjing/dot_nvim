@@ -4,5 +4,10 @@
 
 require("config.platform").setup_path()
 
+-- Keep the system clipboard opt-in: only explicit "+ register mappings
+-- (<leader>y / <leader>p / <leader>d) touch it. LazyVim defaults to
+-- clipboard=unnamedplus, which makes plain y/d/x write there too.
+vim.opt.clipboard = ""
+
 vim.opt.virtualedit = "onemore"
 vim.opt.listchars = { tab = "> ", nbsp = "+" }
